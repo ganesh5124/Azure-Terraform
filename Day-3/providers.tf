@@ -7,12 +7,12 @@ terraform {
     }
     required_version = ">=1.9.0"
     
-    # backend "azurerm" {
-    #     resource_group_name   = "state-file-rg"
-    #     storage_account_name  = "statefilestoragemqyc"
-    #     container_name        = "statefilecontainer"
-    #     key                   = "dev.terraform.tfstate"
-    # }
+    backend "azurerm" {
+        resource_group_name   = "state-file-rg"
+        storage_account_name  = "statefilestoragemqyc"
+        container_name        = "statefilecontainer"
+        key                   = "dev.terraform.tfstate"
+    }
 }
 
 resource "azurerm_resource_group" "Testing-Resource-Group" {
