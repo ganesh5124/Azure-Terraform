@@ -8,7 +8,16 @@ RESOURCE_GROUP_NAME="terraform-rg"
 STORAGE_ACCOUNT_NAME="terraformstorage$RANDOM"
 CONTAINER_NAME="tfstate"
 LOCATION="eastus"
+action=$1
 
+if [ "$action" == "delete" ]; then
+    echo "Destroying resources..."
+    # Destroy resources
+    az group delete --name $RESOURCE_GROUP_NAME --yes
+    exit 0
+fi
+
+if [ "$action" == "plan" ]; then 
 # Create resource group
 az group create --name $RESOURCE_GROUP_NAME --location $LOCATION
 
@@ -24,3 +33,5 @@ az storage container create --name $CONTAINER_NAME --account-name $STORAGE_ACCOU
 # Display storage account name and container name
 echo "Storage account name: $STORAGE_ACCOUNT_NAME"
 echo "Container name: $CONTAINER_NAME"
+
+fi
