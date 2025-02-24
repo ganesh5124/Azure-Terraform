@@ -10,7 +10,7 @@ resource "azurerm_virtual_network" "vnet" {
   name                = "vnet"
   location            = azurerm_resource_group.rg[0].location
   resource_group_name = azurerm_resource_group.rg[0].name
-  address_space       = ["10.0.10.0/16"]
+  address_space       = ["10.0.0.0/16"]
   depends_on = [azurerm_resource_group.rg]
 }
 
@@ -20,12 +20,16 @@ resource "azurerm_subnet" "subnet" {
     name                 = each.key
     resource_group_name  = azurerm_resource_group.rg[0].name
     virtual_network_name = azurerm_virtual_network.vnet.name
+<<<<<<< Updated upstream
     address_prefixes     = [each.value]
 }
 
 # Example of provider meta-argument in azure resource
 provider "azurerm" {
   features {}
+=======
+    address_prefixes    = [each.value]
+>>>>>>> Stashed changes
 }
 
 # Example for loop in terraform
@@ -39,15 +43,12 @@ output "subnet_name" {
 
 # Example of lifecycle meta-argument in azure resource
 resource "azurerm_storage_account" "storage" {
-  name                     = "storageaccount"
+  name                     = "regdemostoragebb"
   resource_group_name      = azurerm_resource_group.rg[0].name
   location                 = azurerm_resource_group.rg[0].location
   account_tier             = "Standard"
   account_replication_type = "LRS"
-
   lifecycle {
-    ignore_changes = [
-      account_replication_type,
-    ]
+    create_before_destroy = true
   }
 }
