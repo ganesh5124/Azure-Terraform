@@ -6,16 +6,14 @@ terraform {
         }
     }
     required_version = ">=1.9.0"
-    
-    backend "azurerm" {
-        resource_group_name   = "state-file-rg"
-        storage_account_name  = "statefilestoragemqyc"
-        container_name        = "statefilecontainer"
-        key                   = "dev.terraform.tfstate"
-    }
 }
 
 provider "azurerm" {
     features {}
     subscription_id = "eddc191f-363e-4b9b-8a87-a7cda71eb8f5"
+}
+
+resource "azurerm_resource_group" "rg" {
+    name     = "peer1-peer2-rg"
+    location = "East US"
 }
