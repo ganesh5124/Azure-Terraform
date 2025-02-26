@@ -1,107 +1,46 @@
-terraform {
-    required_providers {
-        azurerm = {
-            source = "hashicorp/azurerm"
-            version = "~> 4.8.0"
-        }
-    }
-    required_version = ">=1.9.0"
-    
-    backend "azurerm" {
-        resource_group_name   = "state-file-rg"
-        storage_account_name  = "statefilestoragemqyc"
-        container_name        = "statefilecontainer"
-        key                   = "dev.terraform.tfstate"
-    }
+# Example for Dynamic Expression by taking vnet, subnet and security group as input
+resource "azurerm_resource_group" "rg" {
+  name     = var.resource_group_name
+  location = var.region_name
 }
 
-resource "azurerm_resource_group" "Testing-Resource-Group" {
-    name     = "Testing-RG"
-    location = "East US"
+resource "azurerm_virtual_network" "vnet" {
+  name                = "DevVnet"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  address_space       = ["10.0.0.0/16"]
 }
 
-provider "azurerm" {
-    features {}
-    subscription_id = "eddc191f-363e-4b9b-8a87-a7cda71eb8f5"
+resource "azurerm_subnet" "subnet" {
+  name                 = "internal"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = ["10.0.10.0/24"]
 }
 
-variable "prefix" {
-    type    = string
-    default = "testing"
-}
-
-data "azurerm_resource_group" "shared-rg"{
-    name     = "shared-rg"
-    location = "East US"
-}
-
-
-data "azurerm_virtual_network" "shared-vnet" {
-    name                = "com-vnet"
-    resource_group_name = data.azurerm_resource_group.shared-rg.name
-}
-
-data "azurerm_subnet" "shared-subnet" {
-    name                 = "devops"
-    virtual_network_name = data.azurerm_virtual_network.shared-vnet.name
-    resource_group_name  = data.azurerm_resource_group.shared-rg.name
-}
-
-resource "azurerm_resource_group" "dev" {
-    name     = "${var.prefix}-rg"
-    location = data.azurerm_resource_group.shared-rg.location
-}
-
-resource "azurerm_network_interface" "demo-nic" {
-    name                      = "${var.prefix}-nic"
-    resource_group_name       = azurerm_resource_group.dev.name
-    location                  = azurerm_resource_group.dev.location
-    ip_configuration {
-        name                          = "internal"
-        subnet_id                     = data.azurerm_subnet.shared-subnet.id
-        private_ip_address_allocation = "Dynamic"
-    }
-  
-}
-
-
-resource "azurerm_virtual_machine" "demo-machine" {
-    name                  = "${var.prefix}-vm"
-    resource_group_name   = data.azurerm_resource_group.shared-rg.name
-    location              = data.azurerm_resource_group.shared-rg.location
-    vm_size               = "Standard_DS1_v2"
-    network_interface_ids = [azurerm_network_interface.demo-nic.id]
-    delete_os_disk_on_termination = true
-
-    storage_image_reference {
-        publisher = "Canonical"
-        offer     = "UbuntuServer"
-        sku       = "16.04-LTS"
-        version   = "latest"
+resource "azurerm_network_security_group" "nsg" {
+  name                = azurerm_virtual_network.vnet.name == "DevVnet" ? "dev-nsg" : "prod-nsg"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+    # Example of dynamic expression
+    dynamic "security_rule" {
+    for_each = local.security_rules
+    content {
+      name                       = security_rule.value.name
+      priority                   = security_rule.value.priority
+      direction                  = security_rule.value.direction
+      access                     = security_rule.value.access
+      protocol                   = security_rule.value.protocol
+      source_port_range          = security_rule.value.source_port_range
+      destination_port_range     = security_rule.value.destination_port_range
+      source_address_prefix      = security_rule.value.source_address_prefix
+      destination_address_prefix = security_rule.value.destination_address_prefix
     }
 
-    storage_os_disk {
-        name              = "${var.prefix}-osdisk"
-        caching           = "ReadWrite"
-        create_option     = "FromImage"
-        managed_disk_type = "Standard_LRS"
     }
-
-    os_profile {
-        computer_name  = "${var.prefix}-vm"
-        admin_username = "adminuser"
-        admin_password = "Password1234!"
-    }
-
-    os_profile_linux_config {
-        disable_password_authentication = false
-    }
-  
 }
 
-
-
-
-
-
-
+# Splat Expression Example
+output "security_rule" {
+  value = azurerm_network_security_group.nsg.security_rule[*].name
+}
