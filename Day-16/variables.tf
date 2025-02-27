@@ -16,5 +16,5 @@ variable "app_service_plan_name" {
 
 variable "app_service_name" {
   description = "Name of the app service"
-  default = "app-service"
+  default = "appservicewebappfordemo"
 }
