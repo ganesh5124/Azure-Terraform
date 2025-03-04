@@ -34,12 +34,21 @@ output "subnet_name" {
 
 # Example of lifecycle meta-argument in azure resource
 resource "azurerm_storage_account" "storage" {
-  name                     = "regdemostoragebb"
+  name                     = var.storage_name
   resource_group_name      = azurerm_resource_group.rg[0].name
   location                 = azurerm_resource_group.rg[0].location
   account_tier             = "Standard"
   account_replication_type = "LRS"
   lifecycle {
     create_before_destroy = true
+
+    prevent_destroy = true
+
+  precondition {
+    # This storage account will only be destroyed if the resource group is destroyed.
+    condition     = length(azurerm_resource_group.rg) > 0
+    error_message = "Their is no resource group to destroy this storage account"
+  }
+  
   }
 }
