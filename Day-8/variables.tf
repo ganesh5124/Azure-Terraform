@@ -33,3 +33,9 @@ variable "prod_private_subnets" {
   default     = []
   description = "description"
 }
+
+variable "nsg_name" {
+  type        = string
+  default     = ""
+  description = "description"
+}
