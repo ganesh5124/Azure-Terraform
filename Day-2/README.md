@@ -1,4 +1,0 @@
-## Terraform Providers
-
-* Target API
-* 

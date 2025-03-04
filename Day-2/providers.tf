@@ -15,7 +15,7 @@ resource "azurerm_resource_group" "Testing-Resource-Group" {
 
 provider "azurerm" {
     features {}
-    subscription_id = "eddc191f-363e-4b9b-8a87-a7cda71eb8f5"
+    subscription_id = "c5b0c396-1237-4eb0-84bd-3eee44556e69"
 }
 
 
