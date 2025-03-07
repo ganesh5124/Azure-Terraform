@@ -1,0 +1,7 @@
+rgname = "aks-demo"
+location = "East US"
+SUB_ID = "c5b0c396-1237-4eb0-84bd-3eee44556e69"
+service_principal_name = "aks-sp"
+keyvault_name = "ganeshakskeyvault"
+sku_name = "standard"
+kubernetes_version = "1.30.2"
